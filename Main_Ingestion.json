@@ -1,0 +1,251 @@
+{
+  "name": "Main_Ingestion",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "compliance-audit",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a49083e1-f343-4398-893b-35d3b9d0de46",
+      "name": "Webhook",
+      "webhookId": "65ab02db-e581-472a-9a72-d45c0238cd1a"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8000/audit",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "file"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        224,
+        0
+      ],
+      "id": "d9d93118-4783-494d-9cec-8b333f101f12",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "df4275d8-09b7-43b2-9cb0-16b19b58eb9f",
+              "leftValue": "={{ $json.overall_confidence }}",
+              "rightValue": 0.9,
+              "operator": {
+                "type": "number",
+                "operation": "lt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        448,
+        0
+      ],
+      "id": "39dc5b66-e08b-4c5c-a797-a4b3110d91ae",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "fromEmail": "saarikarajen@gmail.com",
+        "toEmail": "saarikarajen@gmail.com",
+        "subject": "Compliance Alert: Low Confidence Detected",
+        "html": "=<p>⚠️ <strong>Compliance Review Required</strong></p>\n<p>The document <strong>{{ $('HTTP Request').item.json.filename }}</strong> was flagged due to low confidence (Score: {{ $('HTTP Request').item.json.overall_confidence }}).</p>\n<p>Please review and submit your decision using the link below:</p>\n<p><a href=\"http://localhost:5678/form-test/6b297b60-5e81-4e46-a084-adffd4cbf7f8\" target=\"_blank\">🔗 Click here to review and override or approve</a></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        672,
+        -96
+      ],
+      "id": "0a214984-865e-4dea-9bca-f143b7833812",
+      "name": "Send an Email",
+      "webhookId": "3408a3ab-4eed-443d-97e1-3d624a6051d0",
+      "credentials": {
+        "smtp": {
+          "id": "KlSDaMsWOc0kN0Ap",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "audit_logs",
+          "mode": "list",
+          "cachedResultName": "audit_logs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "filename": "={{ $('HTTP Request').item.json.filename }}",
+            "overall_confidence": "={{ $('HTTP Request').item.json.overall_confidence }}",
+            "status": "AUTO_APPROVED"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "filename",
+              "displayName": "filename",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "overall_confidence",
+              "displayName": "overall_confidence",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        672,
+        96
+      ],
+      "id": "47cf0203-4eb9-4421-9120-dce9a07e4c68",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "2PhlElRmVb8uqYqa",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d388b665-aa1c-422e-97a8-ebd8adde97d4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9272e6520a55e53cc4710178a5f496440a3c5808302af82bd09a864e1ecc6dc"
+  },
+  "nodeGroups": [],
+  "id": "2aGDMBEYlmeyiZwU",
+  "tags": []
+}

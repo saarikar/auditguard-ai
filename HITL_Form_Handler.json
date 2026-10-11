@@ -1,0 +1,166 @@
+{
+  "name": "HITL_Form_Handler",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Compliance Audit Review",
+        "formDescription": "Review flagged contract and submit approval decision.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Document Name"
+            },
+            {
+              "fieldLabel": "Review Decision",
+              "fieldType": "dropdown",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "APPROVE"
+                  },
+                  {
+                    "option": "REJECT"
+                  },
+                  {
+                    "option": "NEEDS_MODIFICATION"
+                  }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Reviewer Notes",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c8f2360b-ca52-43f6-b0ff-4f4448a73f18",
+      "name": "On form submission",
+      "webhookId": "6b297b60-5e81-4e46-a084-adffd4cbf7f8"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "review_decisions",
+          "mode": "list",
+          "cachedResultName": "review_decisions"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "filename": "={{ $json['Document Name'] }}",
+            "reviewer_action": "={{ $json['Review Decision'] }}",
+            "notes": "={{ $json['Reviewer Notes'] }}"
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "filename",
+              "displayName": "filename",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reviewer_action",
+              "displayName": "reviewer_action",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "notes",
+              "displayName": "notes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "reviewed_at",
+              "displayName": "reviewed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.7,
+      "position": [
+        224,
+        0
+      ],
+      "id": "5bf87c92-69c3-4bd3-b942-ba55e66a224f",
+      "name": "Insert rows in a table",
+      "credentials": {
+        "postgres": {
+          "id": "2PhlElRmVb8uqYqa",
+          "name": "Postgres account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "4828aa75-503f-4ab2-85aa-145228b97423",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c9272e6520a55e53cc4710178a5f496440a3c5808302af82bd09a864e1ecc6dc"
+  },
+  "nodeGroups": [],
+  "id": "OeAJWDG9jylUns3y",
+  "tags": []
+}
